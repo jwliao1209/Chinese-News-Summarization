@@ -1,3 +1,4 @@
+sentencepiece != 0.1.92
 torch==2.1.0
 transformers==4.34.1
 evaluate==0.4.0

@@ -67,10 +67,10 @@ class Trainer:
             attention_mask=batch_data["attention_mask"],
             max_length=MAX_TARGET_LEN,
             num_beams=self.num_beams,
-            do_sample=False, 
-            top_p=self.top_p, 
-            top_k=self.top_k,
-            temperature=self.temperature,
+            # do_sample=False,
+            # top_p=self.top_p,
+            # top_k=self.top_k,
+            # temperature=self.temperature,
         )
         return generated_tokens
 

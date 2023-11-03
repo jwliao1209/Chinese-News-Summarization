@@ -47,13 +47,13 @@ def parse_arguments() -> Namespace:
     parser.add_argument("--num_beams", type=int,
                         default=5,
                         help="number of beams search")
-    parser.add_argument("--top_p", type=int,
+    parser.add_argument("--top_p", type=float,
                         default=1,
                         help="top p")
     parser.add_argument("--top_k", type=int,
                         default=0,
                         help="top k")
-    parser.add_argument("--temperature", type=int,
+    parser.add_argument("--temperature", type=float,
                         default=1,
                         help="temperature")
     parser.add_argument("--device_id", type=int,
@@ -68,8 +68,8 @@ if __name__ == "__main__":
     args = parse_arguments()
 
     # Prepared dataset
-    train_data_list = read_jsonl("data/data/train.jsonl")
-    valid_data_list = read_jsonl("data/data/public.jsonl")
+    train_data_list = read_jsonl("data/train.jsonl")
+    valid_data_list = read_jsonl("data/public.jsonl")
 
     tokenizer = AutoTokenizer.from_pretrained(
         args.tokenizer_name,

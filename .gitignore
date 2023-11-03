@@ -1,7 +1,6 @@
-data
 .lock
-sum_ckpt
-sum_ckpt_0
-sum_ckpt_1
+src/__pycache__
+old_version
+data
+wandb
 checkpoint
-c

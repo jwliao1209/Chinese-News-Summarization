@@ -31,7 +31,3 @@ def set_random_seeds(seed=0):
 
 def dict_to_device(data: dict, device: torch.device) -> dict:
     return {k: v.to(device) if not isinstance(v, list) else v for k, v in data.items()}
-
-
-def postprocess_func(batch_data):
-    return ["\n".join(nltk.sent_tokenize(data.strip())) for data in batch_data]

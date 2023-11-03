@@ -1,10 +1,8 @@
-accelerate==0.23.0
-datasets==2.14.5
-sentencepiece != 0.1.92
-protobuf
-rouge==1.0.1
-nltk==3.8.1
-py7zr
 torch==2.1.0
+transformers==4.34.1
 evaluate==0.4.0
-transformers
+nltk==3.8.1
+rouge==1.0.1
+wandb==0.15.12
+py7zr
+protobuf

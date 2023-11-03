@@ -1,4 +1,5 @@
-from src.constants import MAX_SOURCE_LEN, MAX_TARGET_LEN
+import nltk
+from src.constants import TEXT_COL, SUMMARY_COL, MAX_SOURCE_LEN, MAX_TARGET_LEN
 
 
 def preprocess_func(data, tokenizer, train=True):

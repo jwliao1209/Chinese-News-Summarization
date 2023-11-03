@@ -1,17 +1,17 @@
-import json
 import math
 import torch
+import wandb
 
-from tqdm import tqdm
 from argparse import Namespace, ArgumentParser
 from functools import partial
 from torch.utils.data import DataLoader
 from transformers import AutoTokenizer, AutoConfig, AutoModelForSeq2SeqLM, get_scheduler
 from src.dataset import ChineseNewsDataset, collate_func
+
 from src.process import preprocess_func
 from src.optimizer import get_optimizer
 from src.trainer import Trainer
-from src.utils import read_jsonl
+from src.utils import set_random_seeds, read_jsonl
 
 
 def parse_arguments() -> Namespace:
@@ -95,7 +95,7 @@ if __name__ == "__main__":
 
     # Prepared optimizer and learning rate scheduler
     optimizer = get_optimizer(model, lr=args.lr, weight_decay=args.weight_decay)
-    num_update_steps_per_epoch = math.ceil(len(train_loader) / accum_grad_step)
+    num_update_steps_per_epoch = math.ceil(len(train_loader) / args.accum_grad_step)
     max_train_steps = args.epoch * num_update_steps_per_epoch
     lr_scheduler = get_scheduler(
         name=args.lr_scheduler,
@@ -141,6 +141,7 @@ if __name__ == "__main__":
         top_p=args.top_p,
         top_k=args.top_k,
         temperature=args.temperature,
+        logger=wandb,
     )
     trainer.fit(epoch=args.epoch)
     wandb.finish()

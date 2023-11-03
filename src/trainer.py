@@ -6,7 +6,7 @@ from src.constants import CHECKPOINT_DIR, SUMMARY_COL, MAX_TARGET_LEN
 # from src.metric import RougeScore
 from src.process import postprocess_func
 from src.tracker import MetricTracker
-from src.utils import dict_to_device, postprocess_func
+from src.utils import dict_to_device
 
 
 class Trainer:
@@ -105,7 +105,7 @@ class Trainer:
     def valid_one_epoch(self):
         self.model.eval()
         self.progress_bar = tqdm(self.valid_loader, desc=f"Validation {self.cur_ep}")
-        self.tracker.reset(keys=["valid/loss", "valid/rouge1", "valid/rouge2", "valid/rougeL"])
+        self.tracker.reset(keys=["valid/rouge1", "valid/rouge2", "valid/rougeL"])
 
         # prediction_list = []
         # ground_truth_list = []

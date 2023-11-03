@@ -4,6 +4,7 @@ import evaluate
 from tqdm import tqdm
 from src.constants import CHECKPOINT_DIR, SUMMARY_COL, MAX_TARGET_LEN
 # from src.metric import RougeScore
+from src.process import postprocess_func
 from src.tracker import MetricTracker
 from src.utils import dict_to_device, postprocess_func
 

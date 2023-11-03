@@ -1,4 +1,4 @@
-# NLG: Chinese News Summarization
+# Chinese News Summarization
 This repository is implementation of Homework 2 for CSIE5431 Applied Deep Learning course in 2023 Fall semester at National Taiwan University.
 
 
@@ -43,7 +43,7 @@ We thank the Hugging Face repository: https://github.com/huggingface/transformer
 @misc{
     title  = {2023_adl_hw2_natural_language_generation},
     author = {Jia-Wei Liao},
-    url    = {https://github.com/jwliao1209/Natural-Language-Generation},
+    url    = {https://github.com/jwliao1209/Chinese-News-Summarization},
     year   = {2023}
 }
 ```

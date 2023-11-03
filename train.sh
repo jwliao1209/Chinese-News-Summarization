@@ -3,13 +3,15 @@ python train.py --train_file ./data/train.json \
                 --num_beams 5 \
                 --model_name_or_path google/mt5-small \
 		--tokenizer_name google/mt5-small \
-                --per_device_train_batch_size 4 \
+                --per_device_train_batch_size 8 \
                 --learning_rate 1e-3 \
-		--num_train_epochs 20 \
-		--gradient_accumulation_steps 16 \
+		--num_train_epochs 15 \
+		--gradient_accumulation_steps 4 \
                 --text_column 'maintext' \
 		--summary_column 'title' \
-		--num_warmup_steps 50 \
+		--num_warmup_steps 0 \
                 --output_dir ./sum_ckpt \
                 --with_tracking \
-		--ignore_pad_token_for_loss True
+		--ignore_pad_token_for_loss True \
+		--max_source_length 256 \
+		--max_target_length 64

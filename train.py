@@ -1,13 +1,16 @@
 import math
+import nltk
 import torch
 import wandb
 
+from filelock import FileLock
 from argparse import Namespace, ArgumentParser
 from functools import partial
 from torch.utils.data import DataLoader
 from transformers import AutoTokenizer, AutoConfig, AutoModelForSeq2SeqLM, get_scheduler
-from src.dataset import ChineseNewsDataset, collate_func
+from transformers.utils import is_offline_mode
 
+from src.dataset import ChineseNewsDataset, collate_func
 from src.process import preprocess_func
 from src.optimizer import get_optimizer
 from src.trainer import Trainer
@@ -24,7 +27,7 @@ def parse_arguments() -> Namespace:
                         default="google/mt5-small",
                         help="model name or path")
     parser.add_argument("--batch_size", type=int,
-                        default=8,
+                        default=16,
                         help="batch size")
     parser.add_argument("--accum_grad_step", type=int,
                         default=4,
@@ -36,13 +39,13 @@ def parse_arguments() -> Namespace:
                         default=1e-3,
                         help="learning rate")
     parser.add_argument("--weight_decay", type=float,
-                        default=1e-5,
+                        default=0, #1e-5,
                         help="weight decay")
     parser.add_argument("--lr_scheduler", type=str,
-                        default="cosine",
+                        default="linear",
                         help="learning rate scheduler")
     parser.add_argument("--warm_up_step", type=int,
-                        default=100,
+                        default=0, #100,
                         help="number of warm up steps")
     parser.add_argument("--num_beams", type=int,
                         default=5,
@@ -54,18 +57,27 @@ def parse_arguments() -> Namespace:
                         default=0,
                         help="top k")
     parser.add_argument("--temperature", type=float,
-                        default=1,
+                        default=0,
                         help="temperature")
     parser.add_argument("--device_id", type=int,
                         default=0,
                         help="deivce id")
-
     return parser.parse_args()
 
 
 if __name__ == "__main__":
     set_random_seeds()
     args = parse_arguments()
+    
+    try:
+        nltk.data.find("tokenizers/punkt")
+    except (LookupError, OSError):
+        if is_offline_mode():
+            raise LookupError(
+                "Offline mode: run this script without TRANSFORMERS_OFFLINE first to download nltk data files"
+            )
+        with FileLock(".lock") as lock:
+            nltk.download("punkt", quiet=True)
 
     # Prepared dataset
     train_data_list = read_jsonl("data/train.jsonl")
@@ -123,7 +135,6 @@ if __name__ == "__main__":
             "top_p": args.top_p,
             "top_k": args.top_k,
             "temperature": args.temperature,
-
         }
     )
     wandb.watch(model, log="all")

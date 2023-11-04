@@ -9,7 +9,7 @@ def get_optimizer(
     weight_decay: float = 0,
     ) -> Optimizer:
 
-    no_decay = ["bias", "LayerNorm.weight"]
+    no_decay = ["bias", "LayerNorm.weight", "layer_norm.weight"]
     optimizer_grouped_parames = [
         {
             "params": [p for n, p in model.named_parameters() if not any(nd in n for nd in no_decay)],

@@ -1,9 +1,8 @@
 import os
 import torch
-import evaluate
 from tqdm import tqdm
 from src.constants import CHECKPOINT_DIR, SUMMARY_COL, MAX_TARGET_LEN
-# from src.metric import RougeScore
+from src.metric import RougeScore
 from src.process import postprocess_func
 from src.tracker import MetricTracker
 from src.utils import dict_to_device
@@ -39,7 +38,7 @@ class Trainer:
         self.optimizer = optimizer
         self.accum_grad_step = accum_grad_step
         self.lr_scheduler = lr_scheduler
-        # self.eval_func = RougeScore()
+        self.eval_func = RougeScore()
         self.tracker = MetricTracker()
         self.logger = logger
 
@@ -105,35 +104,32 @@ class Trainer:
     def valid_one_epoch(self):
         self.model.eval()
         self.progress_bar = tqdm(self.valid_loader, desc=f"Validation {self.cur_ep}")
-        self.tracker.reset(keys=["valid/rouge1", "valid/rouge2", "valid/rougeL"])
+        self.tracker.reset(keys=["valid/rouge-1", "valid/rouge-2", "valid/rouge-l"])
 
-        # prediction_list = []
-        # ground_truth_list = []
-
-        metric = evaluate.load("rouge")
+        prediction_list = []
+        ground_truth_list = []
 
         for step, batch_data in enumerate(self.progress_bar, start=1):
             batch_data = dict_to_device(batch_data, self.device)
             generated_tokens = self.valid_step(batch_data, step)
             generated_tokens = postprocess_func(self.tokenizer.batch_decode(generated_tokens, skip_special_tokens=True))
             ground_truth = batch_data[SUMMARY_COL]
-            metric.add_batch(predictions=generated_tokens, references=ground_truth)
+            prediction_list.extend(generated_tokens)
+            ground_truth_list.extend(ground_truth)
 
-        result = metric.compute(use_stemmer=True)
-        score = {k: round(v * 100, 2) for k, v in result.items()}
-        print(score)
+        scores = self.eval_func.evaluate(prediction_list, ground_truth_list)
+        print(scores)
 
-        # score = self.eval_func.evaluate(prediction_list, ground_truth_list)
-        for rouge in ["rouge1", "rouge2", "rougeL"]:
-            self.tracker.update(f"valid/{rouge}", score[rouge])
-            self.tracker.update(f"valid/{rouge}", score[rouge])
+        for rouge in ["rouge-1", "rouge-2", "rouge-l"]:
+            self.tracker.update(f"valid/{rouge}", scores[rouge])
+            self.tracker.update(f"valid/{rouge}", scores[rouge])
 
         self.log({"epoch": self.cur_ep, **self.tracker.result()})
         self.progress_bar.close()
         self.model.save_pretrained(
             os.path.join(
                 CHECKPOINT_DIR,
-                f"epoch={self.cur_ep}_rouge-1={self.tracker.result().get('valid/rouge1', 0)}"
+                f"epoch={self.cur_ep}_rouge-1={self.tracker.result().get('valid/rouge-1', 0)}"
             )
         )
         return

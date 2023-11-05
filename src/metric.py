@@ -1,25 +1,38 @@
 import os
+import gdown
+import zipfile
+
 from rouge import Rouge
-from ckiptagger import WS, data_utils
+from ckiptagger import WS
 
 
-cache_dir = os.environ.get("XDG_CACHE_HOME", os.path.join(os.getenv("HOME"), ".cache"))
-download_dir = os.path.join(cache_dir, "ckiptagger")
-data_dir = os.path.join(cache_dir, "ckiptagger/data")
-os.makedirs(download_dir, exist_ok=True)
+def download_data_gdown(path):
+    file_id = "1efHsY16pxK0lBD2gYCgCTnv1Swstq771"
+    url = f"https://drive.google.com/uc?id={file_id}"
+    data_zip = os.path.join(path, "data.zip")
+    gdown.download(url, data_zip, quiet=False)
+    with zipfile.ZipFile(data_zip, "r") as zip_ref:
+        zip_ref.extractall(path)
+    return
 
-if not os.path.exists(os.path.join(data_dir, "model_ws")):
-    data_utils.download_data_gdown(download_dir)
 
-ws = WS(data_dir, disable_cuda=False)
+def get_ws():
+    cache_dir = os.environ.get("XDG_CACHE_HOME", os.path.join(os.getenv("HOME"), ".cache"))
+    download_dir = os.path.join(cache_dir, "ckiptagger")
+    data_dir = os.path.join(cache_dir, "ckiptagger/data")
+    os.makedirs(download_dir, exist_ok=True)
+    if not os.path.exists(os.path.join(data_dir, "model_ws")):
+        download_data_gdown(download_dir)
+    return WS(data_dir, disable_cuda=False)
 
 
 class RougeScore:
     def __init__(self):
         self.rouge = Rouge()
+        self.ws = get_ws()
 
     def tokenize_and_join(self, sentences):
-        return [" ".join(toks) for toks in ws(sentences)]
+        return [" ".join(toks) for toks in self.ws(sentences)]
 
     def evaluate(self, preds, refs, avg=True, ignore_empty=False):
         """wrapper around: from rouge import Rouge

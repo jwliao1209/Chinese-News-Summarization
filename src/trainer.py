@@ -3,9 +3,11 @@ import torch
 from tqdm import tqdm
 from src.constants import CHECKPOINT_DIR, SUMMARY_COL, MAX_TARGET_LEN
 from src.metric import RougeScore
+from src.loss import RLLoss
 from src.process import postprocess_func
 from src.tracker import MetricTracker
 from src.utils import dict_to_device
+
 
 
 class Trainer:
@@ -71,7 +73,12 @@ class Trainer:
             # top_k=self.top_k,
             # temperature=self.temperature,
         )
-        return generated_tokens
+        generated_tokens = postprocess_func(
+            self.tokenizer.batch_decode(
+                generated_tokens, skip_special_tokens=True
+            )
+        )
+        return generated_tokens, batch_data[SUMMARY_COL]
 
     def log(self, record):
         # self.progress_bar.set_postfix(record)
@@ -111,9 +118,7 @@ class Trainer:
 
         for step, batch_data in enumerate(self.progress_bar, start=1):
             batch_data = dict_to_device(batch_data, self.device)
-            generated_tokens = self.valid_step(batch_data, step)
-            generated_tokens = postprocess_func(self.tokenizer.batch_decode(generated_tokens, skip_special_tokens=True))
-            ground_truth = batch_data[SUMMARY_COL]
+            generated_tokens, ground_truth = self.valid_step(batch_data, step)
             prediction_list.extend(generated_tokens)
             ground_truth_list.extend(ground_truth)
 
@@ -140,3 +145,68 @@ class Trainer:
             self.train_one_epoch()
             self.valid_one_epoch()
         return
+
+
+class RLTrainer(Trainer):
+    def __init__(
+        self,
+        tokenizer,
+        model,
+        device,
+        train_loader,
+        valid_loader,
+        optimizer,
+        accum_grad_step,
+        lr_scheduler,
+        logger=None,
+        num_beams=5,
+        top_p=1,
+        top_k=0,
+        temperature=1,
+        *arg,
+        **kwarg,
+        ):
+        super().__init__(
+            tokenizer=tokenizer,
+            model=model,
+            device=device,
+            train_loader=train_loader,
+            valid_loader=valid_loader,
+            optimizer=optimizer,
+            accum_grad_step=accum_grad_step,
+            lr_scheduler=lr_scheduler,
+            logger=logger,
+            num_beams=num_beams,
+            top_p=top_p,
+            top_k=top_k,
+            temperature=temperature,
+        )
+        self.criterion = RLLoss()
+    
+    def train_step(self, batch_data, index):
+        outputs = self.model(
+            input_ids=batch_data["input_ids"],
+            attention_mask=batch_data["attention_mask"],
+            labels=batch_data["labels"],
+        )
+        logits = outputs.logits
+        labels = batch_data["labels"]
+
+        generated_tokens = self.model.generate(
+            input_ids=batch_data["input_ids"],
+            attention_mask=batch_data["attention_mask"],
+            max_length=MAX_TARGET_LEN,
+            num_beams=self.num_beams,
+            # do_sample=False,
+            # top_p=self.top_p,
+            # top_k=self.top_k,
+            # temperature=self.temperature,
+        )
+        generations = postprocess_func(
+            self.tokenizer.batch_decode(
+                generated_tokens, skip_special_tokens=True
+            )
+        )
+        references = batch_data[SUMMARY_COL]
+        loss = self.criterion(logits, labels, generations, references)
+        return loss

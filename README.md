@@ -18,33 +18,34 @@ bash ./download.sh
 ## Reproducing best result
 To reproduce our best result, you can run the commad:
 ```
-bash ./run.sh data/public.jsonl pred/output.jsonl
+bash ./run.sh <data file> <output file>
 ```
 
 
 ## Training
+To train the summarization model, you can run the commad:
 ```
-bash ./train.sh
+python train.py
 ```
 
 
 ## Testing
+To test the summarization model, you can run the commad:
 ```
 python test.py
 ```
 
-## Inference
-```
-python infer.py
-```
-
 
 ## Evaluation Submission
+**Step 1:**  Download and install the evaluation metric
 ```
 git clone https://github.com/moooooser999/ADL23-HW2.git
 cd ADL23-HW2
 pip install -e tw_rouge
+```
 
+**Step 2:**  Run the command to get the result
+```
 python eval.py -r public.jsonl -s submission.jsonl
 ```
 

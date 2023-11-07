@@ -58,13 +58,13 @@ python eval.py -r public.jsonl -s submission.jsonl
     <td>Rouge-L</td>
   </tr>
   <tr>
-    <td>Baseline</td>
+    <td>Our</td>
     <td>26.8510</td>
     <td>10.7346</td>
     <td>23.9712</td>
   </tr>
   <tr>
-    <td>Our</td>
+    <td>Baseline</td>
     <td>22.0</td>
     <td>8.5</td>
     <td>20.5</td>

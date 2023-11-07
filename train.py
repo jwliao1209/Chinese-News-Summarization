@@ -14,12 +14,17 @@ from src.dataset import ChineseNewsDataset, collate_func
 from src.process import preprocess_func
 from src.optimizer import get_optimizer
 from src.trainer import Trainer, RLTrainer
-from src.utils import set_random_seeds, read_jsonl
+from src.utils import set_random_seeds, prepare_nltk, read_jsonl
 
 
 def parse_arguments() -> Namespace:
     parser = ArgumentParser(description="Chinese News Summarization")
-
+    parser.add_argument("--train_file", type=str,
+                        default="data/train.jsonl",
+                        help="training file")
+    parser.add_argument("--valid_file", type=str,
+                        default="data/public.jsonl",
+                        help="validation file")
     parser.add_argument("--tokenizer_name", type=str,
                         default="google/mt5-small",
                         help="tokenizer name")
@@ -50,8 +55,10 @@ def parse_arguments() -> Namespace:
     parser.add_argument("--num_beams", type=int,
                         default=5,
                         help="number of beams search")
+    parser.add_argument("--do_sample", action="store_true",
+                        help="do sampling stratgies")
     parser.add_argument("--top_p", type=float,
-                        default=1,
+                        default=0,
                         help="top p")
     parser.add_argument("--top_k", type=int,
                         default=0,
@@ -69,21 +76,12 @@ def parse_arguments() -> Namespace:
 
 if __name__ == "__main__":
     set_random_seeds()
+    prepare_nltk()
     args = parse_arguments()
 
-    try:
-        nltk.data.find("tokenizers/punkt")
-    except (LookupError, OSError):
-        if is_offline_mode():
-            raise LookupError(
-                "Offline mode: run this script without TRANSFORMERS_OFFLINE first to download nltk data files"
-            )
-        with FileLock(".lock") as lock:
-            nltk.download("punkt", quiet=True)
-
     # Prepared dataset
-    train_data_list = read_jsonl("data/train.jsonl")
-    valid_data_list = read_jsonl("data/public.jsonl")
+    train_data_list = read_jsonl(args.train_file)
+    valid_data_list = read_jsonl(args.valid_file)
 
     tokenizer = AutoTokenizer.from_pretrained(
         args.tokenizer_name,
@@ -94,7 +92,6 @@ if __name__ == "__main__":
 
     train_dataset = ChineseNewsDataset(train_data_list, preprocess_func)
     valid_dataset = ChineseNewsDataset(valid_data_list, preprocess_func)
-
     train_loader = DataLoader(train_dataset, batch_size=args.batch_size, collate_fn=collate_func, shuffle=True)
     valid_loader = DataLoader(valid_dataset, batch_size=args.batch_size, collate_fn=collate_func, shuffle=False)
 
@@ -134,6 +131,7 @@ if __name__ == "__main__":
             "weight_decay": args.weight_decay,
             "warm_up_step": args.warm_up_step,
             "num_beams": args.num_beams,
+            "do_sample": args.do_sample,
             "top_p": args.top_p,
             "top_k": args.top_k,
             "temperature": args.temperature,
@@ -141,37 +139,31 @@ if __name__ == "__main__":
     )
     wandb.watch(model, log="all")
 
-    if args.use_rl:
-        trainer = RLTrainer(
-            tokenizer=tokenizer,
-            model=model,
-            device=device,
-            train_loader=train_loader,
-            valid_loader=valid_loader,
-            optimizer=optimizer,
-            accum_grad_step=args.accum_grad_step,
-            lr_scheduler=lr_scheduler,
-            num_beams=args.num_beams,
-            top_p=args.top_p,
-            top_k=args.top_k,
-            temperature=args.temperature,
-            logger=wandb,
-        )
-    else:
-        trainer = Trainer(
-            tokenizer=tokenizer,
-            model=model,
-            device=device,
-            train_loader=train_loader,
-            valid_loader=valid_loader,
-            optimizer=optimizer,
-            accum_grad_step=args.accum_grad_step,
-            lr_scheduler=lr_scheduler,
-            num_beams=args.num_beams,
-            top_p=args.top_p,
-            top_k=args.top_k,
-            temperature=args.temperature,
-            logger=wandb,
-        )
+    sampling_params = {
+        "do_sample": args.do_sample,
+    }
+    if args.do_sample:
+        if args.top_p > 0:
+            sampling_params["top_p"] = args.top_p
+        if args.top_k > 0:
+            sampling_params["top_k"] = args.top_k
+        if args.temperature > 0:
+            sampling_params["temperature"] = args.temperature
+    print(sampling_params)
+
+    Trainer = RLTrainer if args.use_rl else Trainer
+    trainer = Trainer(
+        tokenizer=tokenizer,
+        model=model,
+        device=device,
+        train_loader=train_loader,
+        valid_loader=valid_loader,
+        optimizer=optimizer,
+        accum_grad_step=args.accum_grad_step,
+        lr_scheduler=lr_scheduler,
+        num_beams=args.num_beams,
+        logger=wandb,
+        **sampling_params,
+    )
     trainer.fit(epoch=args.epoch)
     wandb.finish()

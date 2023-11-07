@@ -31,5 +31,18 @@ def set_random_seeds(seed: int = 0) -> None:
     return
 
 
+def prepare_nltk():
+    try:
+        nltk.data.find("tokenizers/punkt")
+    except (LookupError, OSError):
+        if is_offline_mode():
+            raise LookupError(
+                "Offline mode: run this script without TRANSFORMERS_OFFLINE first to download nltk data files"
+            )
+        with FileLock(".lock") as lock:
+            nltk.download("punkt", quiet=True)
+    return
+
+
 def dict_to_device(data: dict, device: torch.device) -> dict:
     return {k: v.to(device) if not isinstance(v, list) else v for k, v in data.items()}

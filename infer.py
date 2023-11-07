@@ -9,7 +9,7 @@ from transformers import AutoTokenizer, AutoConfig, AutoModelForSeq2SeqLM
 from src.constants import MAX_TARGET_LEN, SUMMARY_COL
 from src.dataset import ChineseNewsDataset, collate_func
 from src.process import preprocess_func, postprocess_func
-from src.utils import set_random_seeds, read_jsonl, dict_to_device, write_jsonl
+from src.utils import set_random_seeds, prepare_nltk, read_jsonl, dict_to_device, write_jsonl
 
 
 def parse_arguments() -> Namespace:
@@ -51,6 +51,7 @@ def parse_arguments() -> Namespace:
 
 if __name__ == "__main__":
     set_random_seeds()
+    prepare_nltk()
     args = parse_arguments()
 
     # Prepared dataset

@@ -13,7 +13,7 @@ from transformers.utils import is_offline_mode
 from src.dataset import ChineseNewsDataset, collate_func
 from src.process import preprocess_func
 from src.optimizer import get_optimizer
-from src.trainer import Trainer
+from src.trainer import Trainer, RLTrainer
 from src.utils import set_random_seeds, read_jsonl
 
 
@@ -36,7 +36,7 @@ def parse_arguments() -> Namespace:
                         default=15,
                         help="number of epochs")
     parser.add_argument("--lr", type=float,
-                        default=1e-3,
+                        default=3e-5,
                         help="learning rate")
     parser.add_argument("--weight_decay", type=float,
                         default=0, #1e-5,
@@ -60,15 +60,17 @@ def parse_arguments() -> Namespace:
                         default=0,
                         help="temperature")
     parser.add_argument("--device_id", type=int,
-                        default=0,
+                        default=1,
                         help="deivce id")
+    parser.add_argument("--use_rl", action="store_true",
+                        help="Use Reinforcement Learning")
     return parser.parse_args()
 
 
 if __name__ == "__main__":
     set_random_seeds()
     args = parse_arguments()
-    
+
     try:
         nltk.data.find("tokenizers/punkt")
     except (LookupError, OSError):
@@ -123,14 +125,14 @@ if __name__ == "__main__":
         config={
             "tokenizer": args.tokenizer_name,
             "model": args.model_name_or_path,
-            "epochs": args.epoch,
+            "epoch": args.epoch,
             "batch_size": args.batch_size,
             "accum_grad_step": args.accum_grad_step,
             "optimizer": "adamw",
             "lr_scheduler": args.lr_scheduler,
-            "learning_rate": args.lr,
+            "lr": args.lr,
             "weight_decay": args.weight_decay,
-            "num_warmup_steps": args.warm_up_step,
+            "warm_up_step": args.warm_up_step,
             "num_beams": args.num_beams,
             "top_p": args.top_p,
             "top_k": args.top_k,
@@ -139,20 +141,37 @@ if __name__ == "__main__":
     )
     wandb.watch(model, log="all")
 
-    trainer = Trainer(
-        tokenizer=tokenizer,
-        model=model,
-        device=device,
-        train_loader=train_loader,
-        valid_loader=valid_loader,
-        optimizer=optimizer,
-        accum_grad_step=args.accum_grad_step,
-        lr_scheduler=lr_scheduler,
-        num_beams=args.num_beams,
-        top_p=args.top_p,
-        top_k=args.top_k,
-        temperature=args.temperature,
-        logger=wandb,
-    )
+    if args.use_rl:
+        trainer = RLTrainer(
+            tokenizer=tokenizer,
+            model=model,
+            device=device,
+            train_loader=train_loader,
+            valid_loader=valid_loader,
+            optimizer=optimizer,
+            accum_grad_step=args.accum_grad_step,
+            lr_scheduler=lr_scheduler,
+            num_beams=args.num_beams,
+            top_p=args.top_p,
+            top_k=args.top_k,
+            temperature=args.temperature,
+            logger=wandb,
+        )
+    else:
+        trainer = Trainer(
+            tokenizer=tokenizer,
+            model=model,
+            device=device,
+            train_loader=train_loader,
+            valid_loader=valid_loader,
+            optimizer=optimizer,
+            accum_grad_step=args.accum_grad_step,
+            lr_scheduler=lr_scheduler,
+            num_beams=args.num_beams,
+            top_p=args.top_p,
+            top_k=args.top_k,
+            temperature=args.temperature,
+            logger=wandb,
+        )
     trainer.fit(epoch=args.epoch)
     wandb.finish()

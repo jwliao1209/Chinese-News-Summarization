@@ -45,4 +45,13 @@ class RougeScore:
         preds = self.tokenize_and_join([preds] if not isinstance(preds, list) else preds)
         refs = self.tokenize_and_join([refs] if not isinstance(refs, list) else refs)
         scores = self.rouge.get_scores(preds, refs, avg=avg, ignore_empty=ignore_empty)
-        return {k: v["f"] * 100 for k, v in scores.items()}
+        if avg:
+            return {k: v["f"] * 100 for k, v in scores.items()}
+        else:
+            return [
+                {
+                    "rouge-1": score["rouge-1"]["f"],
+                    "rouge-2": score["rouge-2"]["f"],
+                    "rouge-l": score["rouge-l"]["f"],
+                } for score in scores
+            ]

@@ -4,6 +4,7 @@ import zipfile
 
 from rouge import Rouge
 from ckiptagger import WS
+from tensorflow.keras import backend as K
 
 
 def download_data_gdown(path):
@@ -55,3 +56,10 @@ class RougeScore:
                     "rouge-l": score["rouge-l"]["f"],
                 } for score in scores
             ]
+    
+    def __del__(self):
+        try:
+            self.ws.__del__()
+        except:
+            pass
+        return

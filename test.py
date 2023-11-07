@@ -58,7 +58,7 @@ if __name__ == "__main__":
         use_fast=True,
         trust_remote_code=False
     )
-    test_data_list = read_jsonl(args.data_path)
+    test_data_list = read_jsonl(args.data_path)[:100]
     preprocess_func = partial(preprocess_func, tokenizer=tokenizer)
     test_dataset = ChineseNewsDataset(test_data_list, preprocess_func)
     test_loader = DataLoader(test_dataset, batch_size=args.batch_size, collate_fn=collate_func, shuffle=False)

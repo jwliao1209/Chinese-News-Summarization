@@ -5,19 +5,21 @@ import torch
 import numpy as np
 
 
-def read_jsonl(file_path):
+def read_jsonl(file_path: str) -> list:
     with open(file_path, "r") as f:
         data = [json.loads(line) for line in f]
     return data
 
 
-def save_json(obj: dict, path: str) -> None:
+def write_jsonl(data_list: list, path: str) -> None:
     with open(path, "w") as fp:
-        json.dump(obj, fp, indent=4)
+        for data in data_list:
+            fp.write(json.dumps(data, ensure_ascii=False))
+            fp.write('\n')
     return
 
 
-def set_random_seeds(seed=0):
+def set_random_seeds(seed: int = 0) -> None:
     np.random.seed(seed)
     random.seed(seed)
     torch.manual_seed(seed)

@@ -9,8 +9,7 @@ from transformers import AutoTokenizer, AutoConfig, AutoModelForSeq2SeqLM
 from src.constants import MAX_TARGET_LEN, SUMMARY_COL
 from src.dataset import ChineseNewsDataset, collate_func
 from src.process import preprocess_func, postprocess_func
-from src.metric import RougeScore
-from src.utils import set_random_seeds, read_jsonl, dict_to_device
+from src.utils import set_random_seeds, read_jsonl, dict_to_device, write_jsonl
 
 
 def parse_arguments() -> Namespace:
@@ -42,6 +41,9 @@ def parse_arguments() -> Namespace:
     parser.add_argument("--device_id", type=int,
                         default=0,
                         help="deivce id")
+    parser.add_argument("--output_file", type=str,
+                        default="pred/output.jsonl",
+                        help="output file")
     return parser.parse_args()
 
 
@@ -56,7 +58,7 @@ if __name__ == "__main__":
         trust_remote_code=False
     )
     test_data_list = read_jsonl("data/public.jsonl")
-    preprocess_func = partial(preprocess_func, tokenizer=tokenizer)
+    preprocess_func = partial(preprocess_func, tokenizer=tokenizer, train=False)
     test_dataset = ChineseNewsDataset(test_data_list, preprocess_func)
     test_loader = DataLoader(test_dataset, batch_size=args.batch_size, collate_fn=collate_func, shuffle=False)
 
@@ -82,15 +84,11 @@ if __name__ == "__main__":
     print(sampling_params)
 
     model.eval()
-    eval_fun = RougeScore()
-
     prediction_list = []
-    ground_truth_list = []
     test_bar = tqdm(test_loader, desc=f"Testing")
     for _, batch_data in enumerate(test_bar, start=1):
         with torch.no_grad():
             batch_data = dict_to_device(batch_data, device)
-
             generated_tokens = model.generate(
                 input_ids=batch_data["input_ids"],
                 attention_mask=batch_data["attention_mask"],
@@ -98,12 +96,13 @@ if __name__ == "__main__":
                 num_beams=args.num_beams,
                 **sampling_params,
             )
-            generated_tokens = postprocess_func(
+            generations = postprocess_func(
                 tokenizer.batch_decode(generated_tokens, skip_special_tokens=True)
             )
-            ground_truth = batch_data[SUMMARY_COL]
-            prediction_list.extend(generated_tokens)
-            ground_truth_list.extend(ground_truth)
-
-    score = eval_fun.evaluate(prediction_list, ground_truth_list)
-    print(score)
+            prediction_list.extend(
+                [
+                    {SUMMARY_COL: pred, "id": ID}
+                    for ID, pred in zip(batch_data["id"], generations)
+                ]
+            )
+    write_jsonl(prediction_list, args.output_file)

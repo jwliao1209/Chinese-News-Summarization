@@ -18,11 +18,35 @@ bash ./download.sh
 ## Reproducing best result
 To reproduce our best result, you can run the commad:
 ```
-
+bash ./run.sh data/public.jsonl pred/output.jsonl
 ```
 
 
 ## Training
+```
+bash ./train.sh
+```
+
+
+## Ｔesting
+```
+python test.py
+```
+
+## Inference
+```
+python infer.py
+```
+
+
+## Evaluation Submission
+```
+git clone https://github.com/moooooser999/ADL23-HW2.git
+cd ADL23-HW2
+pip install -e tw_rouge
+
+python eval.py -r public.jsonl -s submission.jsonl
+```
 
 
 

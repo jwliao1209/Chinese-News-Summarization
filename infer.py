@@ -21,7 +21,7 @@ def parse_arguments() -> Namespace:
                         default="google/mt5-small",
                         help="tokenizer name")
     parser.add_argument("--model_name_or_path", type=str,
-                        default="checkpoint_1/epoch=15_rouge-1=26.850953064812938",
+                        default="checkpoint/epoch=15_rouge-1=26.850953064812938",
                         help="model name or path")
     parser.add_argument("--batch_size", type=int,
                         default=100,

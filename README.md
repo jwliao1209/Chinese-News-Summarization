@@ -5,7 +5,7 @@ This repository is implementation of Homework 2 for CSIE5431 Applied Deep Learni
 ## Setting the Environment
 To set the environment, you can run this command:
 ```
-pip install -r requirements.txt
+pip install -r config/requirements.txt
 ```
 
 
@@ -28,7 +28,7 @@ bash ./train.sh
 ```
 
 
-## Ｔesting
+## Testing
 ```
 python test.py
 ```
@@ -49,9 +49,27 @@ python eval.py -r public.jsonl -s submission.jsonl
 ```
 
 
-
 ## Experiment Results
-
+<table>
+  <tr>
+    <td>Method</td>
+    <td>Rouge-1</td>
+    <td>Rouge-2</td>
+    <td>Rouge-L</td>
+  </tr>
+  <tr>
+    <td>Baseline</td>
+    <td>26.8510</td>
+    <td>10.7346</td>
+    <td>23.9712</td>
+  </tr>
+  <tr>
+    <td>Our</td>
+    <td>22.0</td>
+    <td>8.5</td>
+    <td>20.5</td>
+  </tr>
+<table>
 
 
 ## Operating System and Device

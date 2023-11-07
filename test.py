@@ -15,12 +15,14 @@ from src.utils import set_random_seeds, read_jsonl, dict_to_device
 
 def parse_arguments() -> Namespace:
     parser = ArgumentParser(description="Chinese News Summarization")
-
+    parser.add_argument("--data_path", type=str,
+                        default="data/public.jsonl",
+                        help="data path")
     parser.add_argument("--tokenizer_name", type=str,
                         default="google/mt5-small",
                         help="tokenizer name")
     parser.add_argument("--model_name_or_path", type=str,
-                        default="checkpoint_1/epoch=15_rouge-1=26.850953064812938",
+                        default="checkpoint/epoch=15_rouge-1=26.850953064812938",
                         help="model name or path")
     parser.add_argument("--batch_size", type=int,
                         default=100,
@@ -55,7 +57,7 @@ if __name__ == "__main__":
         use_fast=True,
         trust_remote_code=False
     )
-    test_data_list = read_jsonl("data/public.jsonl")
+    test_data_list = read_jsonl(args.data_path)
     preprocess_func = partial(preprocess_func, tokenizer=tokenizer)
     test_dataset = ChineseNewsDataset(test_data_list, preprocess_func)
     test_loader = DataLoader(test_dataset, batch_size=args.batch_size, collate_fn=collate_func, shuffle=False)

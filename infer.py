@@ -14,7 +14,9 @@ from src.utils import set_random_seeds, read_jsonl, dict_to_device, write_jsonl
 
 def parse_arguments() -> Namespace:
     parser = ArgumentParser(description="Chinese News Summarization")
-
+    parser.add_argument("--data_path", type=str,
+                        default="data/public.jsonl",
+                        help="data path")
     parser.add_argument("--tokenizer_name", type=str,
                         default="google/mt5-small",
                         help="tokenizer name")
@@ -41,7 +43,7 @@ def parse_arguments() -> Namespace:
     parser.add_argument("--device_id", type=int,
                         default=0,
                         help="deivce id")
-    parser.add_argument("--output_file", type=str,
+    parser.add_argument("--output_path", type=str,
                         default="pred/output.jsonl",
                         help="output file")
     return parser.parse_args()
@@ -57,7 +59,7 @@ if __name__ == "__main__":
         use_fast=True,
         trust_remote_code=False
     )
-    test_data_list = read_jsonl("data/public.jsonl")
+    test_data_list = read_jsonl(args.data_path)
     preprocess_func = partial(preprocess_func, tokenizer=tokenizer, train=False)
     test_dataset = ChineseNewsDataset(test_data_list, preprocess_func)
     test_loader = DataLoader(test_dataset, batch_size=args.batch_size, collate_fn=collate_func, shuffle=False)
@@ -105,4 +107,4 @@ if __name__ == "__main__":
                     for ID, pred in zip(batch_data["id"], generations)
                 ]
             )
-    write_jsonl(prediction_list, args.output_file)
+    write_jsonl(prediction_list, args.output_path)

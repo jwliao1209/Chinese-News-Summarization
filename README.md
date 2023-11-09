@@ -45,7 +45,7 @@ python test.py
 ```
 
 
-## Evaluation Submission
+## Evaluating Submission
 To evaluate the submission file, you can run the command
 ```
 python ADL23-HW2/eval.py -r public.jsonl -s submission.jsonl

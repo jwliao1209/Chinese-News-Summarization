@@ -3,13 +3,13 @@ This repository is implementation of Homework 2 for CSIE5431 Applied Deep Learni
 
 
 ## Setting the Environment
-**Step 1:** Install the main packages
+**Step 1: Install the main packages**  
 To set the environment, you can run this command:
 ```
 pip install -r config/requirements.txt
 ```
 
-**Step 2:** Install the evaluation metric
+**Step 2: Install the evaluation metric**  
 To install the evaluation metric, you can run this command:
 ```
 git clone https://github.com/moooooser999/ADL23-HW2.git

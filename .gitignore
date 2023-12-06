@@ -7,5 +7,8 @@ wandb
 checkpoint
 checkpoint_1
 checkpoint_old
+best_checkpoint.zip
 ADL23-HW2
 pred
+epoch=15_rouge-1=26.850953064812938
+output.jsonl

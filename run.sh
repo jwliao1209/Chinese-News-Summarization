@@ -4,8 +4,8 @@ if [ ! -d data ]; then
     unzip data.zip
 fi
 
-if [ ! -d checkpoint ]; then
-    unzip checkpoint.zip
+if [ ! -d best_checkpoint ]; then
+    unzip best_checkpoint.zip
 fi
 
 wait

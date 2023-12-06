@@ -5,5 +5,5 @@ if [ ! -d data ]; then
 fi
 
 if [ ! -d checkpoint ]; then
-    gdown https://drive.google.com/uc?id=1oofRhAizRfcs8Cs81gp-Silia427HqmZ -O checkpoint.zip
+    gdown https://drive.google.com/uc?id=1jpTbxkwClEOh5Au6TiCI3ZnfAQ9-FDgy -O best_checkpoint.zip
 fi

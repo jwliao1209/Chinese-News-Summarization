@@ -18,10 +18,10 @@ def parse_arguments() -> Namespace:
                         default="data/public.jsonl",
                         help="data path")
     parser.add_argument("--tokenizer_name", type=str,
-                        default="google/mt5-small",
+                        default="epoch=15_rouge-1=26.850953064812938",
                         help="tokenizer name")
     parser.add_argument("--model_name_or_path", type=str,
-                        default="checkpoint/epoch=15_rouge-1=26.850953064812938",
+                        default="epoch=15_rouge-1=26.850953064812938",
                         help="model name or path")
     parser.add_argument("--batch_size", type=int,
                         default=100,

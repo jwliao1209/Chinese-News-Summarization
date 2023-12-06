@@ -51,6 +51,7 @@ def parse_arguments() -> Namespace:
 
 if __name__ == "__main__":
     set_random_seeds()
+    prepare_nltk()
     args = parse_arguments()
 
     # Prepared dataset

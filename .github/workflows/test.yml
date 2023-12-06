@@ -32,11 +32,7 @@ jobs:
           pip install -r config/requirements_test.txt
 
       # Run the scripts
-      # - name: Run the scripts
-      #   run: |
-      #     bash ./download.sh
-      #     bash ./tests/run_all_test.sh \
-      #          pretrain/Taiwan-LLM-7B-v2.0-chat \
-      #          checkpoint/epoch=4_ppl=3.649335366725922 \
-      #          tests/test_data.json \
-      #          tests/test_prediction.json
+      - name: Run the scripts
+        run: |
+          # bash ./download.sh
+          bash ./run.sh data/public.jsonl output.jsonl

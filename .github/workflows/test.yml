@@ -34,5 +34,5 @@ jobs:
       # Run the scripts
       - name: Run the scripts
         run: |
-          # bash ./download.sh
+          bash ./download.sh
           bash ./run.sh data/public.jsonl output.jsonl

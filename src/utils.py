@@ -3,6 +3,8 @@ import nltk
 import random
 import torch
 import numpy as np
+from filelock import FileLock
+from transformers.utils import is_offline_mode
 
 
 def read_jsonl(file_path: str) -> list:

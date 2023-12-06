@@ -1,14 +1,11 @@
 import math
-import nltk
 import torch
 import wandb
 
-from filelock import FileLock
 from argparse import Namespace, ArgumentParser
 from functools import partial
 from torch.utils.data import DataLoader
 from transformers import AutoTokenizer, AutoConfig, AutoModelForSeq2SeqLM, get_scheduler
-from transformers.utils import is_offline_mode
 
 from src.dataset import ChineseNewsDataset, collate_func
 from src.process import preprocess_func

@@ -35,4 +35,5 @@ jobs:
       - name: Run the scripts
         run: |
           bash ./download.sh
-          bash ./run.sh data/public.jsonl output.jsonl
+          bash ./run.sh data/sample_test.jsonl private_output.jsonl
+          bash ./run.sh data/public.jsonl public_output.jsonl
